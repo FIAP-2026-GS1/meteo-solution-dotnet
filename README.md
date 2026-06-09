@@ -55,7 +55,7 @@ Migrations/      → histórico versionado de mudanças no banco
 
 ## 🗄️ Diagrama de Entidades
 
-![Diagrama de Entidades — Sentinel Alert](MeteoSolution.API/docs/)
+![Diagrama de Entidades — Sentinel Alert](MeteoSolution.API/docs/entities.png)
 
 **Hierarquia geográfica:**
 ```
