@@ -1,37 +1,46 @@
-# Meteo Solution — API .NET
+# 🌩️ Sentinel Alert — API .NET
 
-API REST desenvolvida em .NET 10 para gerenciamento de regiões monitoradas do sistema **Sentinel Alert**, uma plataforma inteligente de alertas de desastres naturais baseada em geolocalização e dados climáticos.
+> API REST para gerenciamento de regiões monitoradas do sistema de alertas de desastres naturais
 
-Projeto desenvolvido para a **Global Solution 2026/1 — FIAP**.
+**Grupo:** Meteo Solution  
+**Disciplina:** Advanced Business Development with .NET — FIAP 2TDS  
+**Global Solution 2026/1**
 
 ---
 
-## Integrantes
+## 👥 Integrantes
 
 | Nome | RM |
-|-----------------------------------|----------|
-|   Ana Carolina Pereira Fontes     | RM 562145
-|    João Victor Nascimento Adão    | RM 563409
-|    Johnny Dias Mathias Junior     | RM 566516
-|    Luisa Ganasevici de Abreu      | RM 563403
-|    Matheus Moya de Oliveira       | RM 562822
-| 
+|---|---|
+| Ana Carolina Pereira Fontes | RM 562145 |
+| João Victor Nascimento Adão | RM 563409 |
+| Johnny Dias Mathias Junior | RM 566516 |
+| Luisa Ganasevici de Abreu | RM 563403 |
+| Matheus Moya de Oliveira | RM 562822 |
 
 ---
 
-## Tecnologias utilizadas
+## 📋 Sobre o Projeto
 
-- .NET 10
-- ASP.NET Core Web API
-- Entity Framework Core 10
-- PostgreSQL 18
-- Swagger / OpenAPI
+O **Sentinel Alert** é uma plataforma B2B2C que utiliza dados de satélite e APIs públicas (NASA EONET, CEMADEN, OpenWeatherMap) para prever riscos de desastres naturais e enviar alertas personalizados.
+
+Esta API gerencia a hierarquia geográfica do sistema — países, estados, cidades e regiões monitoradas — que alimenta o modelo de IA para cálculo de risco.
 
 ---
 
-## Arquitetura
+## 🛠️ Stack
 
-O projeto segue o padrão **Repository Pattern** com separação em camadas:
+| Camada | Tecnologia |
+|---|---|
+| Framework | .NET 10, ASP.NET Core Web API |
+| ORM | Entity Framework Core 10 (Code First) |
+| Banco | PostgreSQL |
+| Documentação | Swagger / OpenAPI |
+| Arquitetura | Repository Pattern |
+
+---
+
+## 🏗️ Arquitetura
 
 ```
 Controllers/     → recebe requisições HTTP e retorna respostas
@@ -44,60 +53,46 @@ Migrations/      → histórico versionado de mudanças no banco
 
 ---
 
-## Modelo de dados
+## 🗄️ Diagrama de Entidades
 
-O sistema gerencia uma hierarquia geográfica completa:
+![Diagrama de Entidades — Sentinel Alert](docs/entities.png)
 
+**Hierarquia geográfica:**
 ```
-Pais → Estado → Cidade → RegiaoMonitorada
+Pais (1) ──→ (N) Estado (1) ──→ (N) Cidade (1) ──→ (N) RegiaoMonitorada
 ```
 
-Cada `RegiaoMonitorada` contém dados geográficos e ambientais utilizados pelo sistema de IA para calcular o score de risco de desastres.
+Todos os relacionamentos usam `DeleteBehavior.Restrict` — impede exclusão de registros pai que possuem filhos vinculados, protegendo a integridade referencial.
 
 ---
 
-## Como executar localmente
+## ⚙️ Como executar localmente
 
 ### Pré-requisitos
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [PostgreSQL 18](https://www.postgresql.org/download/)
-- [Entity Framework CLI](https://learn.microsoft.com/en-us/ef/core/cli/dotnet)
-
-```bash
-dotnet tool install --global dotnet-ef
-```
+- PostgreSQL rodando localmente
+- [EF Core CLI](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): `dotnet tool install --global dotnet-ef`
 
 ### Passo a passo
 
 **1. Clone o repositório**
 ```bash
 git clone https://github.com/FIAP-2026-GS1/meteo-solution-dotnet.git
-cd meteo-solution-dotnet
+cd meteo-solution-dotnet/MeteoSolution.API
 ```
 
-**2. Configure a string de conexão**
-
-Crie o arquivo `MeteoSolution.API/appsettings.json` com o seguinte conteúdo:
-
+**2. Configure a connection string em `appsettings.json`**
 ```json
 {
   "ConnectionStrings": {
     "DefaultConnection": "Host=localhost;Port=5432;Database=meteosolution_db;Username=postgres;Password=sua_senha"
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*"
+  }
 }
 ```
 
 **3. Aplique as migrations**
 ```bash
-cd MeteoSolution.API
 dotnet ef database update
 ```
 
@@ -113,65 +108,151 @@ http://localhost:{porta}/swagger
 
 ---
 
-## Endpoints disponíveis
+## 🔌 Endpoints e Exemplos de Teste
+
+> **Ordem de cadastro obrigatória:** Pais → Estado → Cidade → RegiaoMonitorada
+
+---
 
 ### Pais
-| Método | Rota | Descrição |
-|---|---|---|
-| GET | /api/Pais | Lista todos os países |
-| GET | /api/Pais/{id} | Busca país por ID |
-| POST | /api/Pais | Cadastra novo país |
-| PUT | /api/Pais/{id} | Atualiza país |
-| DELETE | /api/Pais/{id} | Remove país |
+
+**POST /api/Pais**
+```json
+{
+  "nome": "Brasil",
+  "codigoIso": "BR"
+}
+```
+Response `201 Created`:
+```json
+{
+  "id": 1,
+  "nome": "Brasil",
+  "codigoIso": "BR"
+}
+```
+
+**GET /api/Pais**
+Response `200 OK`:
+```json
+[
+  { "id": 1, "nome": "Brasil", "codigoIso": "BR" }
+]
+```
+
+**GET /api/Pais/1** → Response `200 OK` com o objeto do país
+
+**PUT /api/Pais/1**
+```json
+{
+  "nome": "República Federativa do Brasil",
+  "codigoIso": "BR"
+}
+```
+Response `200 OK`
+
+**DELETE /api/Pais/1** → Response `204 No Content`
+> ⚠️ Retorna `400 Bad Request` se houver estados vinculados (DeleteBehavior.Restrict)
+
+---
 
 ### Estado
-| Método | Rota | Descrição |
-|---|---|---|
-| GET | /api/Estado | Lista todos os estados |
-| GET | /api/Estado/{id} | Busca estado por ID |
-| POST | /api/Estado | Cadastra novo estado |
-| PUT | /api/Estado/{id} | Atualiza estado |
-| DELETE | /api/Estado/{id} | Remove estado |
+
+**POST /api/Estado**
+```json
+{
+  "nome": "São Paulo",
+  "sigla": "SP",
+  "paisId": 1
+}
+```
+Response `201 Created`:
+```json
+{
+  "id": 1,
+  "nome": "São Paulo",
+  "sigla": "SP",
+  "paisId": 1,
+  "paisNome": "Brasil"
+}
+```
+
+**PUT /api/Estado/1**
+```json
+{
+  "nome": "São Paulo",
+  "sigla": "SP",
+  "paisId": 1
+}
+```
+
+**DELETE /api/Estado/1** → `204 No Content`
+> ⚠️ Retorna `400 Bad Request` se houver cidades vinculadas
+
+---
 
 ### Cidade
-| Método | Rota | Descrição |
-|---|---|---|
-| GET | /api/Cidade | Lista todas as cidades |
-| GET | /api/Cidade/{id} | Busca cidade por ID |
-| POST | /api/Cidade | Cadastra nova cidade |
-| PUT | /api/Cidade/{id} | Atualiza cidade |
-| DELETE | /api/Cidade/{id} | Remove cidade |
+
+**POST /api/Cidade**
+```json
+{
+  "nome": "São Paulo",
+  "estadoId": 1
+}
+```
+Response `201 Created`:
+```json
+{
+  "id": 1,
+  "nome": "São Paulo",
+  "estadoId": 1,
+  "estadoNome": "São Paulo"
+}
+```
+
+**DELETE /api/Cidade/1** → `204 No Content`
+> ⚠️ Retorna `400 Bad Request` se houver regiões vinculadas
+
+---
 
 ### RegiaoMonitorada
-| Método | Rota | Descrição |
-|---|---|---|
-| GET | /api/RegiaoMonitorada | Lista todas as regiões |
-| GET | /api/RegiaoMonitorada/{id} | Busca região por ID |
-| POST | /api/RegiaoMonitorada | Cadastra nova região |
-| PUT | /api/RegiaoMonitorada/{id} | Atualiza região |
-| DELETE | /api/RegiaoMonitorada/{id} | Remove região |
+
+**POST /api/RegiaoMonitorada**
+```json
+{
+  "nome": "Vale do Paraíba",
+  "latitude": -23.1791,
+  "longitude": -45.8872,
+  "areaKm2": 150.5,
+  "tipoSolo": "argiloso",
+  "nivelUrbanizacao": "alto",
+  "cidadeId": 1
+}
+```
+Response `201 Created`:
+```json
+{
+  "id": 1,
+  "nome": "Vale do Paraíba",
+  "latitude": -23.1791,
+  "longitude": -45.8872,
+  "areaKm2": 150.5,
+  "tipoSolo": "argiloso",
+  "nivelUrbanizacao": "alto",
+  "cidadeId": 1,
+  "cidadeNome": "São Paulo"
+}
+```
 
 ---
 
-## Ordem de cadastro recomendada
+## 📌 Decisões Técnicas
 
-Para cadastrar uma `RegiaoMonitorada`, respeite a hierarquia de dependências:
-
-```
-1. POST /api/Pais
-2. POST /api/Estado  (informar paisId)
-3. POST /api/Cidade  (informar estadoId)
-4. POST /api/RegiaoMonitorada  (informar cidadeId)
-```
-
----
-
-## Decisões técnicas
-
-**Repository Pattern** — isola a lógica de acesso ao banco dos Controllers, facilitando manutenção e testes.
-
-**DTOs de entrada e saída separados** — o DTO de entrada controla o que o cliente pode enviar. O DTO de saída controla o que a API retorna, evitando exposição desnecessária de dados e ciclos de referência circular.
-
-**Code First com Migrations** — o banco de dados é gerado e versionado a partir das classes C#, garantindo consistência entre ambientes.
-
-**DeleteBehavior.Restrict** — impede deleção de registros pai que possuem filhos vinculados, protegendo a integridade referencial.
+| Decisão | Justificativa |
+|---|---|
+| **Repository Pattern** | Isola a lógica de acesso ao banco dos Controllers — facilita manutenção e testes |
+| **DTOs separados** | DTO de entrada controla o que o cliente envia. DTO de saída controla o que a API retorna — evita exposição de dados e ciclos de referência |
+| **Code First + Migrations** | Banco gerado e versionado a partir das classes C# — consistência entre ambientes |
+| **DeleteBehavior.Restrict** | Impede exclusão de registros pai com filhos vinculados — integridade referencial |
+| **ReferenceHandler.IgnoreCycles** | Evita ciclos de serialização JSON em relacionamentos bidirecionais |
+| **Swagger em todos os ambientes** | Facilita testes e demonstração sem depender de ambiente específico |
