@@ -10,6 +10,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = 
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
+builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
